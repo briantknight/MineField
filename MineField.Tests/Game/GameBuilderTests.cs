@@ -1,0 +1,66 @@
+﻿using MineField.Game;
+using MineField.Models;
+
+namespace MineField.Tests.Game;
+
+[TestClass]
+public class GameBuilderTests
+{
+    private Fixture _fixture;
+
+    [TestInitialize]
+    public void TestInitialize()
+    {
+        _fixture = new Fixture();
+        _fixture.Customizations.Add(new RandomNumericSequenceGenerator(1, 20));
+    }
+
+    [TestMethod]
+    public void ShouldCreatePlayerWithCorrectNumberOfLives()
+    {
+        // Arrange
+        var options = _fixture.Create<Options>();
+
+        var builder = new GameBuilder(options);
+
+        // Act
+        var game = builder.NewGame();
+
+        // Assert
+        game.player.Lives.Should().Be(options.MaxLives);
+    }
+
+
+    [TestMethod]
+    public void ShouldStartPlayerWithStartPositionOnTopRow()
+    {
+        // Arrange
+        var options = _fixture.Create<Options>();
+
+        var builder = new GameBuilder(options);
+
+        // Act
+        var game = builder.NewGame();
+
+        // Assert
+        game.player.StartLocation.Column.Should().Be(0);
+        game.player.CurrentLocation.Row.Should().BeInRange(0, GameBuilder.MaxRows);
+        game.player.CurrentLocation.Should().Be(game.player.StartLocation);
+    }
+
+    [TestMethod]
+    public void ShouldCreateBoardWithExpectedRandomMineLocations()
+    {
+        // Arrange
+        var options = _fixture.Create<Options>();
+
+        var builder = new GameBuilder(options);
+
+        // Act
+        var game = builder.NewGame();
+
+        // Assert
+        game.board.MineLocations.Should().HaveCount(options.NumberOfMines);
+        game.board.MineLocations.Should().OnlyHaveUniqueItems();
+    }
+}
